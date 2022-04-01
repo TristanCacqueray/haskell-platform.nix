@@ -1,4 +1,4 @@
-{ withHoogle ? true, withGUI ? false }:
+{ withHoogle ? true, withGUI ? false, withAudio ? false }:
 let
   # pin the upstream nixpkgs
   nixpkgsPath = fetchTarball {
@@ -80,6 +80,13 @@ let
             ];
           });
 
+          reactive-banana = pkgs.haskell.lib.dontCheck
+            (pkgs.haskell.lib.overrideCabal hpPrev.reactive-banana {
+              version = "1.3.0.0";
+              sha256 = "sha256-c7qgWsmB0OBsuDs+ZPwJ+oG1MapTKJTuKMTI3XmgVRY=";
+              broken = false;
+            });
+
           fakedata = hpPrev.fakedata_1_0_2;
 
           # Bump aeson
@@ -116,8 +123,9 @@ let
 
   ghc = (mkGhc pkgs.myHaskellPackages) (p:
     with p;
-    [ io-streams witch lens relude dhall dhall-json hashtables ]
-    ++ (if withGUI then [ sdl2 GLFW-b ] else [ ]));
+    [ io-streams witch lens relude dhall dhall-json hashtables reactive-banana ]
+    ++ (if withGUI then [ sdl2 GLFW-b ] else [ ])
+    ++ (if withAudio then [ jack ] else [ ]));
 
   hls = pkgs.haskell-language-server.override {
     supportedGhcVersions = [ compilerVersion ];
